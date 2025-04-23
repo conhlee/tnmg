@@ -40,7 +40,7 @@ typedef struct TengokuPal {
 int main(int argc, char** argv) {
     if (argc < 2) {
         printf(
-            "tnmg - Convert MGBA palettes (.pal files) to Tengoku binary palettes\n"
+            "tnmg - Convert Microsoft palettes (.pal files) to Tengoku binary palettes\n"
             "Usage: %s <input_palette.pal> [output_palette.tgk]\n",
             argv[0]
         );
@@ -57,30 +57,29 @@ int main(int argc, char** argv) {
         sprintf(outputPath, "%s.tgk", inputPath);
     }
 
-    printf("MGBA palette at '%s' -> Tengoku palette at '%s'\n", inputPath, outputPath);
+    printf("MS palette at '%s' -> Tengoku palette at '%s'\n", inputPath, outputPath);
 
-    ConsBuffer mgbaPaletteBuf = LoadWholeFile(inputPath);
-    if (!BufferIsValid(&mgbaPaletteBuf))
-        Panic("Failed to load MGBA palette from path %s", inputPath);
+    ConsBuffer msPaletteBuf = LoadWholeFile(inputPath);
+    if (!BufferIsValid(&msPaletteBuf))
+        Panic("Failed to load MS palette from path %s", inputPath);
     
-    MPalRIFF* mgbaPalette = mgbaPaletteBuf.data_void;
-    if (mgbaPalette->riffSignature != RIFF_SIGNATURE)
-        Panic("MGBA palette RIFF signature is nonmatching");
-    if (mgbaPalette->palSignature != PAL__SIGNATURE)
-        Panic("MGBA palette PAL signature is nonmatching");
-    if (mgbaPalette->dataSignature != DATA_SIGNATURE)
-        Panic("MGBA palette DATA signature is nonmatching");
+    MPalRIFF* msPalette = msPaletteBuf.data_void;
+    if (msPalette->riffSignature != RIFF_SIGNATURE)
+        Panic("MS palette RIFF signature is nonmatching");
+    if (msPalette->palSignature != PAL__SIGNATURE)
+        Panic("MS palette PAL signature is nonmatching");
+    if (msPalette->dataSignature != DATA_SIGNATURE)
+        Panic("MS palette DATA signature is nonmatching");
 
     ConsBuffer tengokuPaletteBuf;
-    BufferInit(&tengokuPaletteBuf, mgbaPalette->entryCount * sizeof(u16));
+    BufferInit(&tengokuPaletteBuf, msPalette->entryCount * sizeof(u16));
 
     TengokuPal* tengokuPalette = tengokuPaletteBuf.data_void;
 
-    for (u32 i = 0; i < mgbaPalette->entryCount; i++) {
-        tengokuPalette->entries[i] = TO_BGR555((mgbaPalette->entries[i]) & 0xFFFFFF);
-    }
+    for (u32 i = 0; i < msPalette->entryCount; i++)
+        tengokuPalette->entries[i] = TO_BGR555((msPalette->entries[i]) & 0xFFFFFF);
 
-    BufferDestroy(&mgbaPaletteBuf);
+    BufferDestroy(&msPaletteBuf);
 
     if (WriteWholeFile(&tengokuPaletteBuf, outputPath))
         Panic("Failed to write tengoku palette to path %s", outputPath);
