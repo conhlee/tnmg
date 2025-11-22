@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -O3 -Wall -Wpedantic
+CFLAGS = -O3 -Wall -Wpedantic -std=c17
 SRC = main.c cons/buffer.c cons/file.c cons/error.c
 OBJ = $(SRC:.c=.o)
 TARGET = tnmg
