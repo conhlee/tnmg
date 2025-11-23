@@ -24,18 +24,13 @@ typedef struct MPalRIFF {
     u32 dataSize; // Excludes dataSignature and dataSize
     u16 _unk14; // ???
     u16 entryCount; // Color count.
-    u32 entries[0]; // Colors in RGBA.
+    u32 entries[]; // Colors in RGBA.
 } MPalRIFF;
 
 #define TO_BGR555(x)                       \
       (((((x) >> 0) & 0xFF) >> 3) << 0 )   \
     | (((((x) >> 8) & 0xFF) >> 3) << 5 )   \
     | (((((x) >> 16) & 0xFF) >> 3) << 10)
-
-// https://github.com/arthurtilly/rhythmtengoku/tree/master/include/graphics.h#L95
-typedef struct TengokuPal {
-    u16 entries[0]; // Colors in BGR555. See TO_BGR555
-} TengokuPal;
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -74,10 +69,11 @@ int main(int argc, char** argv) {
     ConsBuffer tengokuPaletteBuf;
     BufferInit(&tengokuPaletteBuf, msPalette->entryCount * sizeof(u16));
 
-    TengokuPal* tengokuPalette = tengokuPaletteBuf.data_void;
+    // https://github.com/arthurtilly/rhythmtengoku/tree/master/include/graphics.h#L95
+    u16 *tengokuPalette = tengokuPaletteBuf.data_void;
 
     for (u32 i = 0; i < msPalette->entryCount; i++)
-        tengokuPalette->entries[i] = TO_BGR555((msPalette->entries[i]) & 0xFFFFFF);
+        tengokuPalette[i] = TO_BGR555((msPalette->entries[i]) & 0xFFFFFF);
 
     BufferDestroy(&msPaletteBuf);
 
